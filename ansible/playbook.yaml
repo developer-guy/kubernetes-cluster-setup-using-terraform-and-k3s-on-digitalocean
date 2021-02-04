@@ -1,0 +1,15 @@
+---
+- name: Set up k3s master node
+  hosts: all
+  become: True
+  vars:
+    k3s_control_node_address: loadbalancer  # Typically a load balancer.
+    k3s_server:
+      datastore-endpoint: "postgres://{{ ansible_env.USER }}:{{ ansible_env.PASSWORD }}@k3s-backend-store-do-user-8562444-0.b.db.ondigitalocean.com:25060/defaultdb"
+  pre_tasks:
+    - name: Set each node to be a control node
+      ansible.builtin.set_fact:
+        k3s_control_node: true
+      when: inventory_hostname in ['k3s_master']
+  roles:
+    - { role: 'xanmanning.k3s', k3s_skip_validation: true }
