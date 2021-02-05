@@ -1,6 +1,6 @@
 resource "digitalocean_database_user" "dbuser" {
   cluster_id = digitalocean_database_cluster.postgres.id
-  name       = var.postgresql_username
+  name       = var.database_user
 }
 
 

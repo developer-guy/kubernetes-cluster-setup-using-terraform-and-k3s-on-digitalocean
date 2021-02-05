@@ -17,8 +17,7 @@ terraform {
 
 variable "do_token" {}
 variable "pvt_key" {}
-variable "postgresql_username"{}
-variable "postgresql_password"{}
+variable "database_user"{}
 
 
 provider "digitalocean" {
