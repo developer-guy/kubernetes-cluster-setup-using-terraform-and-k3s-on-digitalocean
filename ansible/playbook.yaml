@@ -4,9 +4,8 @@
   become: True
   vars:
     k3s_skip_validation: true
-    k3s_control_node_address: loadbalancer  # Typically a load balancer.
     k3s_server:
-      datastore-endpoint: "postgresql://{{ database_user}}:{{ database_password}}@{{ database_host }}/{{ database_name }}"
+      datastore-endpoint: postgres://{{ database_user }}:{{ database_password }}@{{ database_host }}:{{ database_port }}/{{ database_name }}
   pre_tasks:
     - name: Set each node to be a control node
       ansible.builtin.set_fact:
