@@ -18,7 +18,15 @@ terraform {
 variable "do_token" {}
 variable "pvt_key" {}
 variable "database_user"{}
+variable "master_names" {
+  type = set(string)
+  default = ["master1","master2"]
+}
 
+variable "agent_names" {
+  type = set(string)
+  default = ["node1", "node2", "node3"]
+}
 
 provider "digitalocean" {
   token = var.do_token

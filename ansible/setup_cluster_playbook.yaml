@@ -1,15 +1,17 @@
 ---
-- name: Set up k3s master node
+- name: Set up k3s master nodes
   hosts: all
   become: True
   vars:
-    k3s_skip_validation: true
+    k3s_control_node_address: "{{ loadbalancer_ip }}"
     k3s_server:
+      disable:
+        - traefik
       datastore-endpoint: postgres://{{ database_user }}:{{ database_password }}@{{ database_host }}:{{ database_port }}/{{ database_name }}
   pre_tasks:
     - name: Set each node to be a control node
       ansible.builtin.set_fact:
         k3s_control_node: true
-      when: inventory_hostname in ['k3s_master']
+      when: inventory_hostname in ['master1', 'master2']
   roles:
     - role: 'xanmanning.k3s'
