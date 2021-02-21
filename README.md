@@ -4,9 +4,9 @@
 
 This demo aims to emonstrate how we can use set up your our Kubernetes cluster using lightweight Kubernetes distribution called [k3s](https://k3s.io) on DigitalOcean using IAC principle with [Terraform](https://www.terraform.io) and [Ansible](https://www.ansible.com).
 
+# Table of contents
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 - [What's in it for you?](#whats-in-it-for-you)
 - [Which audience are we targeting ?](#which-audience-are-we-targeting-)
 - [Prerequisites](#prerequisites)
