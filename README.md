@@ -34,10 +34,17 @@ This demo aims to emonstrate how we can use set up your our Kubernetes cluster u
 
 # Which audience are we targeting ?
 
+* If you are a developer and wants to set up a lighweight Kubernetes cluster for demo purposes.
+* If you are curious about k3s and wants to try it out on a cloud such as DigitalOcean.
+* If you are a DevOps team member and wants to learn how you can set up k3s a lighweight Kubernetes cluster with HA(Highly Available) mode on DigitalOcean.
+* If you are a System engineer and wants to learn how to automate a setting up k3s cluster using Ansible roles.
+
+You are at the right place. 👌
+
 # Prerequisites
 
-* Terraform v0.14.7
-* ansible 2.10.5
+* <img src="https://symbols-electrical.getvecta.com/stencil_97/45_terraform-icon.d8dd637866.svg" height="16" width="16"/>Terraform v0.14.7
+* <img src="https://symbols-electrical.getvecta.com/stencil_73/122_ansible-icon.e1db432c74.svg" height="16" width="16"/>ansible 2.10.5
 
 > I'm going to this demo on my macOS Catalina 1.15.7, if you are on the same environment, you can use brew which is a package manager for macOS to setup all the tools that we mention above.
 
