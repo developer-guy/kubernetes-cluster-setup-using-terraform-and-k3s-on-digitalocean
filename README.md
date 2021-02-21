@@ -4,7 +4,24 @@
 
 This demo aims to emonstrate how we can use set up your our Kubernetes cluster using lightweight Kubernetes distribution called [k3s](https://k3s.io) on DigitalOcean using IAC principle with [Terraform](https://www.terraform.io) and [Ansible](https://www.ansible.com).
 
-# What will you learn ?
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [What's in it for you?](#whats-in-it-for-you)
+- [Which audience are we targeting ?](#which-audience-are-we-targeting-)
+- [Prerequisites](#prerequisites)
+- [What is IAC(Infrastructure As Code) principle ?](#what-is-iacinfrastructure-as-code-principle-)
+- [What is Terraform ?](#what-is-terraform-)
+- [What is Terraform Cloud ?](#what-is-terraform-cloud-)
+- [How can you write a terraform configuration files ?](#how-can-you-write-a-terraform-configuration-files-)
+- [What is Ansible ?](#what-is-ansible-)
+- [What is Ansible Roles ?](#what-is-ansible-roles-)
+- [How can you write a playbook to automate things on the VM's ?](#how-can-you-write-a-playbook-to-automate-things-on-the-vms-)
+- [Hands On](#hands-on)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# What's in it for you?
 
 * What is IAC(Infrastructure As Code) principle ?
 * What is Terraform ?
