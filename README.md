@@ -44,7 +44,7 @@ You are at the right place. 👌
 
 * <img src="https://cdn.svgporn.com/logos/digital-ocean.svg" height="16" width="16"/> DigitalOcean Account
 * <img src="https://symbols-electrical.getvecta.com/stencil_97/45_terraform-icon.d8dd
-637866.svg" height="16" width="16"> Terraform Cloud
+637866.svg" height="16" width="16"/> Terraform Cloud
 * <img src="https://symbols-electrical.getvecta.com/stencil_97/45_terraform-icon.d8dd637866.svg" height="16" width="16"/> Terraform v0.14.7
 * <img src="https://symbols-electrical.getvecta.com/stencil_73/122_ansible-icon.e1db432c74.svg" height="16" width="16"/> Ansible 2.10.5
 
@@ -142,7 +142,6 @@ provider "digitalocean" {
 data "digitalocean_ssh_key" "terraform" {
   name = "our-ssh-key"
 }
-
 ```
 
 You should notice that we are using DigitalOcean as a provider and bunch of configuration variables. You can refer to the [link](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs) for getting more detail about DigitalOcean provider.
@@ -214,6 +213,114 @@ resource "digitalocean_droplet" "k3s-agent" {
   }
   
  }
+```
+You should notice that we are using the Ansible in the provisioner section called "local-exec". In this provisioner section, we'll set up our k3s onto the VMs after they provisioned. There is a tool called ["do-ansible-inventory"](https://github.com/do-community/do-ansible-inventory) which helps us to enable "Dynamic Inventory Management" feature. Basically, it'll create a host.ini file dynamically based on the VMs that are running on our DigitalOcean environment.
 
+Finally, lets look at the automation file called ["setup_cluster_playbook"](./ansible/setup_cluster_playbook.yaml).
+```yaml
+---
+- name: Set up k3s master nodes
+  hosts: all
+  become: True
+  vars:
+    k3s_control_node_address: "{{ loadbalancer_ip }}"
+    k3s_server:
+      disable:
+        - traefik
+      datastore-endpoint: postgres://{{ database_user }}:{{ database_password }}@{{ database_host }}:{{ database_port }}/{{ database_name }}
+  pre_tasks:
+    - name: Set each node to be a control node
+      ansible.builtin.set_fact:
+        k3s_control_node: true
+      when: inventory_hostname in ['master1', 'master2']
+  roles:
+    - role: 'xanmanning.k3s'
 ```
 
+Lets clarify here, this role is going to set "master1" and "master2" as a k3s control node, but what is the "master1" and "master2", these are the tags that we defined as a variable in the provider.tf file, so, "do-ansible-inventory" tool will generate the host.ini based on that tags. Then, these role will use this tags to define which of them are node or server. In this case, we defined "node1", "node2" and node3 tags for our worker nodes and "master1", "master2" for our control plane nodes.
+
+That's it, lets provision our infrastructure by typing the following commands:
+```bash
+$ cd terraform
+$ terraform init
+Found existing alias for "terraform". You should use: "tf"
+
+Initializing the backend...
+
+Successfully configured the backend "remote"! Terraform will automatically
+use this backend unless the backend configuration changes.
+
+Initializing provider plugins...
+- Finding digitalocean/digitalocean versions matching "1.22.2"...
+- Installing digitalocean/digitalocean v1.22.2...
+- Installed digitalocean/digitalocean v1.22.2 (signed by a HashiCorp partner, key ID F82037E524B9C0E8)
+
+Partner and community providers are signed by their developers.
+If you'd like to know more about provider signing, you can read about it here:
+https://www.terraform.io/docs/cli/plugins/signing.html
+
+Terraform has created a lock file .terraform.lock.hcl to record the provider
+selections it made above. Include this file in your version control repository
+so that Terraform can guarantee to make the same selections by default when
+you run "terraform init" in the future.
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+Execution time: 0h:00m:07s sec
+```
+
+In the above, we initialized the corresponding provider, this is the required step for Terraform.
+
+Lets apply our desired state.
+```bash
+$ terraform apply -auto-approve
+Found existing alias for "terraform". You should use: "tf"
+digitalocean_droplet.k3s-agent["node3"]: Creating...
+digitalocean_droplet.k3s-agent["node2"]: Creating...
+digitalocean_droplet.k3s-agent["node1"]: Creating...
+digitalocean_database_cluster.postgres: Creating...
+digitalocean_loadbalancer.k3s-master-lb: Creating...
+^[digitalocean_database_cluster.postgres: Still creating... [10s elapsed]
+digitalocean_droplet.k3s-agent["node3"]: Still creating... [10s elapsed]
+digitalocean_droplet.k3s-agent["node2"]: Still creating... [10s elapsed]
+digitalocean_droplet.k3s-agent["node1"]: Still creating... [10s elapsed]
+digitalocean_loadbalancer.k3s-master-lb: Still creating... [10s elapsed]
+digitalocean_droplet.k3s-agent["node2"]: Still creating... [20s elapsed]
+digitalocean_droplet.k3s-agent["node1"]: Still creating... [20s elapsed]
+digitalocean_database_cluster.postgres: Still creating... [20s elapsed]
+digitalocean_droplet.k3s-agent["node3"]: Still creating... [20s elapsed]
+digitalocean_loadbalancer.k3s-master-lb: Still creating... [20s elapsed]
+...
+```
+Here is the screenshot from our DigitalOcean account which shows us the actual representation of our desired state.
+![digital_ocean_account](./assets/digital_ocean_account.png)
+
+In the last step, we need to clone the k3s.yaml from one of the master to connect to the cluster using kubectl, don't forget to update kubeconfig file with the LB ip.
+```bash
+$ cd kubectl
+$ rclone copy master1:/etc/rancher/k3s/k3s.yaml ./kubeconfig
+$ LB_IP=164.90.243.154
+$ sed -i '' "s/127.0.0.1/$LB_IP/g" kubeconfig/k3s.yaml
+# remove the ca certificate detail then add inscure-skip-tls-verify: true in the cluster section
+# final cluster section of the configuration should looks like $ rclone copy master1:/etc/rancher/k3s/k3s.yaml ./kubeconfig
+# - cluster:
+#     insecure-skip-tls-verify: true
+#     server: https://164.90.243.154:6443
+$ export KUBECONFIG=kubeconfig/k3s.yaml
+$ kubectl get nodes -o wide
+NAME      STATUS   ROLES                  AGE     VERSION        INTERNAL-IP      EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION     CONTAINER-RUNTIME
+node3     Ready    <none>                 4m43s   v1.20.2+k3s1   167.71.44.122    <none>        Ubuntu 20.04.1 LTS   5.4.0-51-generic   containerd://1.4.3-k3s1
+master1   Ready    control-plane,master   12m     v1.20.2+k3s1   139.59.140.50    <none>        Ubuntu 20.04.1 LTS   5.4.0-51-generic   containerd://1.4.3-k3s1
+master2   Ready    control-plane,master   11m     v1.20.2+k3s1   207.154.242.37   <none>        Ubuntu 20.04.1 LTS   5.4.0-51-generic   containerd://1.4.3-k3s1
+node2     Ready    <none>                 10m     v1.20.2+k3s1   167.71.58.7      <none>        Ubuntu 20.04.1 LTS   5.4.0-51-generic   containerd://1.4.3-k3s1
+node1     Ready    <none>                 10m     v1.20.2+k3s1   165.22.24.74     <none>        Ubuntu 20.04.1 LTS   5.4.0-51-generic   containerd://1.4.3-k3s1
+```
+> I'm using [rclone](https://rclone.org) tool to get files from remote to my host.
+Tadaaaa 🎉🎉🎉🎉
