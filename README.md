@@ -14,10 +14,8 @@ This demo aims to emonstrate how we can use set up your our Kubernetes cluster u
 - 🤔 [What is IAC(Infrastructure As Code) principle ?](#what-is-iacinfrastructure-as-code-principle-)
 - <img src="https://symbols-electrical.getvecta.com/stencil_97/45_terraform-icon.d8dd637866.svg" height="16" width="16"/>[What is Terraform ?](#what-is-terraform-)
 - <img src="https://symbols-electrical.getvecta.com/stencil_97/45_terraform-icon.d8dd637866.svg" height="16" width="16"/>[What is Terraform Cloud ?](#what-is-terraform-cloud-)
-- ⚙️ [How can you write a terraform configuration files ?](#how-can-you-write-a-terraform-configuration-files-)
 - <img src="https://symbols-electrical.getvecta.com/stencil_73/122_ansible-icon.e1db432c74.svg" height="16" width="16"/>[What is Ansible ?](#what-is-ansible-)
 - <img src="https://symbols-electrical.getvecta.com/stencil_73/122_ansible-icon.e1db432c74.svg" height="16" width="16"/>[What is Ansible Roles ?](#what-is-ansible-roles-)
-- 🤔 [How can you write a playbook to automate things on the VM's ?](#how-can-you-write-a-playbook-to-automate-things-on-the-vms-)
 - 👨‍💻[Hands On](#hands-on)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
