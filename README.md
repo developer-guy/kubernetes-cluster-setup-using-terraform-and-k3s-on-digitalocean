@@ -10,6 +10,7 @@ This demo aims to emonstrate how we can use set up your our Kubernetes cluster u
 - 🎁 [What's in it for you?](#whats-in-it-for-you)
 - 🎯 [Which audience are we targeting ?](#which-audience-are-we-targeting-)
 - 🧰 [Prerequisites](#prerequisites)
+- <img src="https://cncf-branding.netlify.app/img/projects/k3s/horizontal/color/k3s-horizontal-color.svg" height="16" width="16"/> [What is k3s ?](#what-is-k3s-)
 - 🤔 [What is IAC(Infrastructure As Code) principle ?](#what-is-iacinfrastructure-as-code-principle-)
 - <img src="https://symbols-electrical.getvecta.com/stencil_97/45_terraform-icon.d8dd637866.svg" height="16" width="16"/>[What is Terraform ?](#what-is-terraform-)
 - <img src="https://symbols-electrical.getvecta.com/stencil_97/45_terraform-icon.d8dd637866.svg" height="16" width="16"/>[What is Terraform Cloud ?](#what-is-terraform-cloud-)
@@ -22,7 +23,7 @@ This demo aims to emonstrate how we can use set up your our Kubernetes cluster u
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # What's in it for you?
-
+* What is k3s ?
 * What is IAC(Infrastructure As Code) principle ?
 * What is Terraform ?
 * What is Terraform Cloud ?
@@ -47,6 +48,26 @@ You are at the right place. 👌
 
 > I'm going to do this demo on my macOS Catalina 1.15.7, if you are on the same environment, you can use [brew](https://brew.sh) which is a package manager for macOS to setup all the tools that we mention above.
 
+# What is k3s ?
+K3s is a fully compliant Kubernetes distribution with the following enhancement:
+
+* Packaged as a single binary.
+* Lightweight storage backend based on sqlite3 as the default storage mechanism. etcd3, MySQL, Postgres also still available.
+* Wrapped in simple launcher that handles a lot of the complexity of TLS and options.
+* Secure by default with reasonable defaults for lightweight environments.
+* Simple but powerful “batteries-included” features have been added, such as: a local storage provider, a service load balancer, a Helm controller, and the Traefik ingress controller.
+* Operation of all Kubernetes control plane components is encapsulated in a single binary and process. This allows K3s to automate and manage complex cluster operations like distributing certificates.
+* External dependencies have been minimized (just a modern kernel and cgroup mounts needed). K3s packages required dependencies, including:
+  * containerd
+  * Flannel
+  * CoreDNS
+  * CNI
+  * Host utilities (iptables, socat, etc)
+  * Ingress controller (traefik)
+  * Embedded service loadbalancer
+  * Embedded network policy controller
+
+> Credit: https://rancher.com/docs/k3s/latest/en/
 # What is IAC(Infrastructure As Code) principle ?
 Infrastructure as code is the process of managing and provisioning computer data centers through machine-readable definition files, rather than physical hardware configuration or interactive configuration tools.
 
@@ -58,7 +79,7 @@ Terraform is an open-source infrastructure as code software tool that provides a
 > Credit: https://www.terraform.io
 
 # What is Terraform Cloud ?
-Terraform Cloud is an application that helps teams use Terraform together. It manages Terraform runs in a consistent and reliable environment, and includes easy access to shared state and secret data, access controls for approving changes to infrastructure, a private registry for sharing Terraform modules, detailed policy controls for governing the contents of Terraform configurations, and more.
+Terraform Cloud is an application that helps teams use Terraform together. It manages Terraform runsin a consistent and reliable environment, and includes easy access to shared state and secret data, access controls for approving changes to infrastructure, a private registry for sharing Terraform modules, detailed policy controls for governing the contents of Terraform configurations, and more.
 
 > Credit: https://www.terraform.io/docs/cloud/index.html#about-terraform-cloud-and-terraform-enterprise
 
@@ -73,3 +94,4 @@ Roles let you automatically load related vars_files, tasks, handlers, and other 
 > Credit: https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse_roles.html
 
 # Hands On
+In this demo, we are going to set up highly available k3s cluster. We are going provision a 2 master node node behind the LB(LoadBalancer) to provide HA support and 3 worker nodes, if you are not familiar about these terms, please go to the [official documentation of Kubernetes](https://kubernetes.io) and learn the meainings of them before continue. After provision the nodes, we'll use the Ansible as local provisioner for our VMs. In Ansible, we'll use the Ansible Role called '' to automate the installation of k3s onto the master and workers node.
