@@ -43,6 +43,8 @@ You are at the right place. 👌
 # Prerequisites
 
 * <img src="https://cdn.svgporn.com/logos/digital-ocean.svg" height="16" width="16"/> DigitalOcean Account
+* <img src="https://symbols-electrical.getvecta.com/stencil_97/45_terraform-icon.d8dd
+637866.svg" height="16" width="16"> Terraform Cloud
 * <img src="https://symbols-electrical.getvecta.com/stencil_97/45_terraform-icon.d8dd637866.svg" height="16" width="16"/> Terraform v0.14.7
 * <img src="https://symbols-electrical.getvecta.com/stencil_73/122_ansible-icon.e1db432c74.svg" height="16" width="16"/> Ansible 2.10.5
 
@@ -94,4 +96,124 @@ Roles let you automatically load related vars_files, tasks, handlers, and other 
 > Credit: https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse_roles.html
 
 # Hands On
-In this demo, we are going to set up highly available k3s cluster. We are going provision a 2 master node node behind the LB(LoadBalancer) to provide HA support and 3 worker nodes, if you are not familiar about these terms, please go to the [official documentation of Kubernetes](https://kubernetes.io) and learn the meainings of them before continue. After provision the nodes, we'll use the Ansible as local provisioner for our VMs. In Ansible, we'll use the Ansible Role called '' to automate the installation of k3s onto the master and workers node.
+In this demo, we are going to set up highly available k3s cluster. We are going provision a 2 master node node behind the LB(LoadBalancer) to provide HA support and 3 worker nodes, if you are not familiar about these terms, please go to the [official documentation of Kubernetes](https://kubernetes.io) and learn the meainings of them before continue. After provision the nodes, we'll use the Ansible as local provisioner for our VMs. In Ansible, we'll use the Ansible Role called ['xanmanning.k3s'](https://galaxy.ansible.com/xanmanning/k3s) to automate the installation of k3s onto the master and workers node.
+
+> NOTE: We are going to use Terraform Cloud as a Terraform Backend to store our Terraform state, before you getting started, please go the following [link](https://www.terraform.io/docs/cli/config/config-file.html#credentials-1) and configure your terraform cli to be able to store state file in the Terraform Cloud.
+
+Lets start with our [provider.tf](./terraform/provider.tf) file that includes our provider and variables definitions.
+```tf
+terraform {
+  required_providers {
+    digitalocean = {
+      source  = "digitalocean/digitalocean"
+      version = "1.22.2"
+    }
+  }
+
+  backend "remote" {
+    organization = "my-organization"
+  
+    workspaces {
+      name = "digitalocean"
+    }
+  }
+}
+
+variable "do_token" {}
+
+variable "pvt_key" {}
+
+variable "database_user"{}
+
+variable "master_names" {
+  type = set(string)
+  default = ["master1","master2"]
+}
+
+variable "agent_names" {
+  type = set(string)
+  default = ["node1", "node2", "node3"]
+}
+
+provider "digitalocean" {
+  token = var.do_token
+}
+
+data "digitalocean_ssh_key" "terraform" {
+  name = "our-ssh-key"
+}
+
+```
+
+You should notice that we are using DigitalOcean as a provider and bunch of configuration variables. You can refer to the [link](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs) for getting more detail about DigitalOcean provider.
+
+Lets continue with [k3s-droplets.tf](./terraform/k3s-droplets.tf) which includes the definitions of our VMs called droplets in DigitalOcean world.
+```tf
+resource "digitalocean_droplet" "k3s-master" {
+   for_each = var.master_names
+
+  image = "ubuntu-20-04-x64"
+  name = each.key
+  region = "fra1"
+  size = "s-1vcpu-1gb"
+  private_networking = true
+  
+  ssh_keys = [
+    data.digitalocean_ssh_key.terraform.id
+  ]
+
+  tags = [ each.key, "k3s_master"]
+
+  provisioner "remote-exec" {
+   inline = ["sudo apt update", "sudo apt install python3 -y", "echo Done!"]
+
+   connection {
+     host        = self.ipv4_address
+     type        = "ssh"
+     user        = "root"
+     private_key = file(var.pvt_key)
+    }
+  }
+  
+
+ provisioner "local-exec" {
+   working_dir = "${path.cwd}/../ansible"
+   command = <<-EOF
+   do-ansible-inventory --group-by-tag > hosts.ini
+   ansible-playbook setup_cluster_playbook.yaml -u root --private-key ~/.ssh/digitalocean_rsa --extra-vars "loadbalancer_ip=${digitalocean_loadbalancer.k3s-master-lb.ip} database_host=${digitalocean_database_cluster.postgres.host} database_user=admin database_password=${digitalocean_database_user.dbuser.password} database_name=${digitalocean_database_cluster.postgres.database} database_port=${digitalocean_database_cluster.postgres.port}"
+ EOF
+ }
+ 
+  depends_on = [ digitalocean_database_cluster.postgres, digitalocean_droplet.k3s-agent ]
+}
+
+resource "digitalocean_droplet" "k3s-agent" {
+   for_each = var.agent_names
+
+  image = "ubuntu-20-04-x64"
+  name = each.key
+  region = "fra1"
+  size = "s-1vcpu-1gb"
+  private_networking = true
+  
+  ssh_keys = [
+    data.digitalocean_ssh_key.terraform.id
+  ]
+
+  tags = [ each.key, "k3s_agent"]
+
+  provisioner "remote-exec" {
+   inline = ["sudo apt update", "sudo apt install python3 -y", "echo Done!"]
+
+   connection {
+     host        = self.ipv4_address
+     type        = "ssh"
+     user        = "root"
+     private_key = file(var.pvt_key)
+    }
+  }
+  
+ }
+
+```
+
