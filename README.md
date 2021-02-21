@@ -43,8 +43,7 @@ You are at the right place. 👌
 # Prerequisites
 
 * <img src="https://cdn.svgporn.com/logos/digital-ocean.svg" height="16" width="16"/> DigitalOcean Account
-* <img src="https://symbols-electrical.getvecta.com/stencil_97/45_terraform-icon.d8dd
-637866.svg" height="16" width="16"/> Terraform Cloud
+* <img src="https://symbols-electrical.getvecta.com/stencil_97/45_terraform-icon.d8dd637866.svg" height="16" width="16"/> Terraform Cloud
 * <img src="https://symbols-electrical.getvecta.com/stencil_97/45_terraform-icon.d8dd637866.svg" height="16" width="16"/> Terraform v0.14.7
 * <img src="https://symbols-electrical.getvecta.com/stencil_73/122_ansible-icon.e1db432c74.svg" height="16" width="16"/> Ansible 2.10.5
 
