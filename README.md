@@ -1,40 +1,30 @@
-![ansible_terraform_k3s](./assets/ansible_terraform_k3s.png)
+<img src="./assets/ansible_terraform_k3s.png" height="400" width="950"/> 
 
 # Set up HA k3s cluster on DigitalOcean using Terraform + Ansible
 
-This demo aims to emonstrate how we can use set up your our Kubernetes cluster using lightweight Kubernetes distribution called [k3s](https://k3s.io) on DigitalOcean using IAC principle with [Terraform](https://www.terraform.io) and [Ansible](https://www.ansible.com).
+This demo aims to demonstrate how we can use set up your our Kubernetes cluster using lightweight Kubernetes distribution called [k3s](https://k3s.io) on DigitalOcean using IAC principle with [Terraform](https://www.terraform.io) and [Ansible](https://www.ansible.com).
 
-# Table of contents
+# 🎁 Table of contents
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-- 🎁 [What's in it for you?](#whats-in-it-for-you)
 - 🎯 [Which audience are we targeting ?](#which-audience-are-we-targeting-)
 - 🧰 [Prerequisites](#prerequisites)
-- <img src="https://cncf-branding.netlify.app/img/projects/k3s/horizontal/color/k3s-horizontal-color.svg" height="16" width="16"/> [What is k3s ?](#what-is-k3s-)
+- <img src="https://cncf-branding.netlify.app/img/projects/k3s/icon/color/k3s-icon-color.svg" height="16" width="16"/> [What is k3s ?](#what-is-k3s-)
 - 🤔 [What is IAC(Infrastructure As Code) principle ?](#what-is-iacinfrastructure-as-code-principle-)
-- <img src="https://symbols-electrical.getvecta.com/stencil_97/45_terraform-icon.d8dd637866.svg" height="16" width="16"/>[What is Terraform ?](#what-is-terraform-)
-- <img src="https://symbols-electrical.getvecta.com/stencil_97/45_terraform-icon.d8dd637866.svg" height="16" width="16"/>[What is Terraform Cloud ?](#what-is-terraform-cloud-)
-- <img src="https://symbols-electrical.getvecta.com/stencil_73/122_ansible-icon.e1db432c74.svg" height="16" width="16"/>[What is Ansible ?](#what-is-ansible-)
-- <img src="https://symbols-electrical.getvecta.com/stencil_73/122_ansible-icon.e1db432c74.svg" height="16" width="16"/>[What is Ansible Roles ?](#what-is-ansible-roles-)
-- 👨‍💻[Hands On](#hands-on)
+- <img src="https://symbols-electrical.getvecta.com/stencil_97/45_terraform-icon.d8dd637866.svg" height="16" width="16"/> [What is Terraform ?](#what-is-terraform-)
+- <img src="https://symbols-electrical.getvecta.com/stencil_97/45_terraform-icon.d8dd637866.svg" height="16" width="16"/> [What is Terraform Cloud ?](#what-is-terraform-cloud-)
+- <img src="https://symbols-electrical.getvecta.com/stencil_73/122_ansible-icon.e1db432c74.svg" height="16" width="16"/> [What is Ansible ?](#what-is-ansible-)
+- <img src="https://symbols-electrical.getvecta.com/stencil_73/122_ansible-icon.e1db432c74.svg" height="16" width="16"/> [What is Ansible Roles ?](#what-is-ansible-roles-)
+- 👨‍💻 [Hands On](#hands-on)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# What's in it for you?
-* What is k3s ?
-* What is IAC(Infrastructure As Code) principle ?
-* What is Terraform ?
-* What is Terraform Cloud ?
-* What is Ansible ?
-* What is Ansible Roles ?
-* Hands On
-
 # Which audience are we targeting ?
 
-* If you are a developer and wants to set up a lighweight Kubernetes cluster for demo purposes.
+* If you are a Software Engineer and wants to set up a lightweigth cluster for demo purposes.
 * If you are curious about k3s and wants to try it out on a cloud such as DigitalOcean.
-* If you are a DevOps team member and wants to learn how you can set up k3s a lighweight Kubernetes cluster with HA(Highly Available) mode on DigitalOcean.
-* If you are a System engineer and wants to learn how to automate a setting up k3s cluster using Ansible roles.
+* If you are a DevOps Engineer and wants to learn how you can set up k3s cluster with HA(Highly Available) mode on DigitalOcean.
+* If you are a System Engineer and wants to learn how to automate a setting up k3s cluster using Ansible roles.
 
 You are at the right place. 👌
 
@@ -93,9 +83,9 @@ Roles let you automatically load related vars_files, tasks, handlers, and other 
 > Credit: https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse_roles.html
 
 # Hands On
-In this demo, we are going to set up highly available k3s cluster. We are going provision a 2 master node node behind the LB(LoadBalancer) to provide HA support and 3 worker nodes, if you are not familiar about these terms, please go to the [official documentation of Kubernetes](https://kubernetes.io) and learn the meainings of them before continue. After provision the nodes, we'll use the Ansible as local provisioner for our VMs. In Ansible, we'll use the Ansible Role called ['xanmanning.k3s'](https://galaxy.ansible.com/xanmanning/k3s) to automate the installation of k3s onto the master and workers node.
+In this demo, we are going to set up highly available k3s cluster. We are going to provision 2 master nodes behind the LB(LoadBalancer) to provide HA support and 3 worker nodes. After provision the nodes, we'll use the Ansible as local provisioner. In Ansible, we'll use the Ansible Role called ['xanmanning.k3s'](https://galaxy.ansible.com/xanmanning/k3s) to automate the installation of k3s onto the master and worker nodes.
 
-> NOTE: We are going to use Terraform Cloud as a Terraform Backend to store our Terraform state, before you getting started, please go the following [link](https://www.terraform.io/docs/cli/config/config-file.html#credentials-1) and configure your terraform cli to be able to store state file in the Terraform Cloud.
+> *P.S:* We are going to use Terraform Cloud as a Terraform Backend to store our Terraform state, before you getting started, please go the following [link](https://www.terraform.io/docs/cli/config/config-file.html#credentials-1) and configure your terraform cli to be able to store state file in the Terraform Cloud.
 
 Lets start with our [provider.tf](./terraform/provider.tf) file that includes our provider and variables definitions.
 ```tf
@@ -141,9 +131,9 @@ data "digitalocean_ssh_key" "terraform" {
 }
 ```
 
-You should notice that we are using DigitalOcean as a provider and bunch of configuration variables. You can refer to the [link](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs) for getting more detail about DigitalOcean provider.
+You should notice here that we are using DigitalOcean as a [provider]((https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs)) and bunch of configuration variables.
 
-Lets continue with [k3s-droplets.tf](./terraform/k3s-droplets.tf) which includes the definitions of our VMs called droplets in DigitalOcean world.
+Lets continue with [k3s-droplets.tf](./terraform/k3s-droplets.tf) which includes the definitions of our droplets.
 ```tf
 resource "digitalocean_droplet" "k3s-master" {
    for_each = var.master_names
@@ -211,9 +201,9 @@ resource "digitalocean_droplet" "k3s-agent" {
   
  }
 ```
-You should notice that we are using the Ansible in the provisioner section called "local-exec". In this provisioner section, we'll set up our k3s onto the VMs after they provisioned. There is a tool called ["do-ansible-inventory"](https://github.com/do-community/do-ansible-inventory) which helps us to enable "Dynamic Inventory Management" feature. Basically, it'll create a host.ini file dynamically based on the VMs that are running on our DigitalOcean environment.
+You should notice here that we are using the Ansible in the provisioner section called `local-exec`. In this provisioner section, we'll set up our k3s onto the droplets after each provisioned. There is a tool called ["do-ansible-inventory"](https://github.com/do-community/do-ansible-inventory) which helps us to enable [Dynamic Inventory Management](https://docs.ansible.com/ansible/latest/user_guide/intro_dynamic_inventory.html) feature. Basically, it'll create a [host.ini](./ansible/host.ini) file dynamically based on the droplets.
 
-Finally, lets look at the automation file called ["setup_cluster_playbook"](./ansible/setup_cluster_playbook.yaml).
+Finally, lets look at the [setup_cluster_playbook](./ansible/setup_cluster_playbook.yaml) automation file.
 ```yaml
 ---
 - name: Set up k3s master nodes
@@ -234,9 +224,9 @@ Finally, lets look at the automation file called ["setup_cluster_playbook"](./an
     - role: 'xanmanning.k3s'
 ```
 
-Lets clarify here, this role is going to set "master1" and "master2" as a k3s control node, but what is the "master1" and "master2", these are the tags that we defined as a variable in the provider.tf file, so, "do-ansible-inventory" tool will generate the host.ini based on that tags. Then, these role will use this tags to define which of them are node or server. In this case, we defined "node1", "node2" and node3 tags for our worker nodes and "master1", "master2" for our control plane nodes.
+Lets clarify here, this role is going to set `master1` and `master2` as a k3s control node, but what is the `master1` and `master2`, these are the tags that we defined as a variable in the provider.tf file, so, `do-ansible-inventory` tool will generate the host.ini based on that tags. Then, these role will use this tags to define which of them are node or server. In this case, we defined `node1`, `node2` and `node3` tags for our worker nodes and `master1`, `master2` for our control plane nodes.
 
-That's it, lets provision our infrastructure by typing the following commands:
+That's it, let's provision our infrastructure.
 ```bash
 $ cd terraform
 $ terraform init
@@ -275,7 +265,7 @@ Execution time: 0h:00m:07s sec
 
 In the above, we initialized the corresponding provider, this is the required step for Terraform.
 
-Lets apply our desired state.
+Let's apply our desired state.
 ```bash
 $ terraform apply -auto-approve
 Found existing alias for "terraform". You should use: "tf"
@@ -299,7 +289,7 @@ digitalocean_loadbalancer.k3s-master-lb: Still creating... [20s elapsed]
 Here is the screenshot from our DigitalOcean account which shows us the actual representation of our desired state.
 ![digital_ocean_account](./assets/digital_ocean_account.png)
 
-In the last step, we need to clone the k3s.yaml from one of the master to connect to the cluster using kubectl, don't forget to update kubeconfig file with the LB ip.
+In the last step, we need to clone the `k3s.yaml` from one of the masters to connect to the cluster using kubectl, don't forget to update kubeconfig file with the LB ip.
 ```bash
 $ cd kubectl
 $ rclone copy master1:/etc/rancher/k3s/k3s.yaml ./kubeconfig
