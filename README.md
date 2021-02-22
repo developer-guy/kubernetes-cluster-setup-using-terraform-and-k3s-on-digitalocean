@@ -98,8 +98,8 @@ terraform {
   }
 
   backend "remote" {
-    organization = "my-organization"
-  
+    organization = "devquy"
+
     workspaces {
       name = "digitalocean"
     }
@@ -107,19 +107,35 @@ terraform {
 }
 
 variable "do_token" {}
-
 variable "pvt_key" {}
+variable "database_user" {}
 
-variable "database_user"{}
-
-variable "master_names" {
-  type = set(string)
-  default = ["master1","master2"]
-}
-
-variable "agent_names" {
-  type = set(string)
-  default = ["node1", "node2", "node3"]
+variable "nodes" {
+  type = set(object({
+    name = string
+    tag  = string
+  }))
+  default = [
+    {
+      name = "master1"
+      tag  = "master"
+    },
+    {
+      name = "master2",
+      tag  = "master"
+    },
+    {
+      name = "agent1",
+      tag  = "agent"
+      }, {
+      name = "agent2",
+      tag  = "agent"
+    },
+    {
+      name = "agent3",
+      tag  = "agent"
+    }
+  ]
 }
 
 provider "digitalocean" {
@@ -127,7 +143,7 @@ provider "digitalocean" {
 }
 
 data "digitalocean_ssh_key" "terraform" {
-  name = "our-ssh-key"
+  name = "my-ssh-key"
 }
 ```
 
@@ -135,20 +151,19 @@ You should notice here that we are using DigitalOcean as a [provider]((https://r
 
 Lets continue with [k3s-droplets.tf](./terraform/k3s-droplets.tf) which includes the definitions of our droplets.
 ```tf
-resource "digitalocean_droplet" "k3s-master" {
-   for_each = var.master_names
-
+resource "digitalocean_droplet" "k3s" {
+  for_each = {for i, v in var.nodes: v.name => v.tag}
   image = "ubuntu-20-04-x64"
   name = each.key
   region = "fra1"
   size = "s-1vcpu-1gb"
   private_networking = true
-  
+
   ssh_keys = [
     data.digitalocean_ssh_key.terraform.id
   ]
 
-  tags = [ each.key, "k3s_master"]
+  tags = [ each.value ]
 
   provisioner "remote-exec" {
    inline = ["sudo apt update", "sudo apt install python3 -y", "echo Done!"]
@@ -160,53 +175,25 @@ resource "digitalocean_droplet" "k3s-master" {
      private_key = file(var.pvt_key)
     }
   }
-  
 
  provisioner "local-exec" {
    working_dir = "${path.cwd}/../ansible"
    command = <<-EOF
    do-ansible-inventory --group-by-tag > hosts.ini
-   ansible-playbook setup_cluster_playbook.yaml -u root --private-key ~/.ssh/digitalocean_rsa --extra-vars "loadbalancer_ip=${digitalocean_loadbalancer.k3s-master-lb.ip} database_host=${digitalocean_database_cluster.postgres.host} database_user=admin database_password=${digitalocean_database_user.dbuser.password} database_name=${digitalocean_database_cluster.postgres.database} database_port=${digitalocean_database_cluster.postgres.port}"
+   ansible-playbook setup_cluster_playbook.yaml -u root --private-key ~/.ssh/digitalocean_rsa --extra-vars "loadbalancer_ip=${digitalocean_loadbalancer.k3s-lb.ip} database_host=${digitalocean_database_cluster.postgres.host} database_user=admin database_password=${digitalocean_database_user.dbuser.password} database_name=${digitalocean_database_cluster.postgres.database} database_port=${digitalocean_database_cluster.postgres.port}"
  EOF
  }
- 
-  depends_on = [ digitalocean_database_cluster.postgres, digitalocean_droplet.k3s-agent ]
+
+  depends_on = [ digitalocean_database_cluster.postgres, digitalocean_loadbalancer.k3s-lb ]
 }
-
-resource "digitalocean_droplet" "k3s-agent" {
-   for_each = var.agent_names
-
-  image = "ubuntu-20-04-x64"
-  name = each.key
-  region = "fra1"
-  size = "s-1vcpu-1gb"
-  private_networking = true
-  
-  ssh_keys = [
-    data.digitalocean_ssh_key.terraform.id
-  ]
-
-  tags = [ each.key, "k3s_agent"]
-
-  provisioner "remote-exec" {
-   inline = ["sudo apt update", "sudo apt install python3 -y", "echo Done!"]
-
-   connection {
-     host        = self.ipv4_address
-     type        = "ssh"
-     user        = "root"
-     private_key = file(var.pvt_key)
-    }
-  }
-  
- }
 ```
+
 You should notice here that we are using the Ansible in the provisioner section called `local-exec`. In this provisioner section, we'll set up our k3s onto the droplets after each provisioned. There is a tool called ["do-ansible-inventory"](https://github.com/do-community/do-ansible-inventory) which helps us to enable [Dynamic Inventory Management](https://docs.ansible.com/ansible/latest/user_guide/intro_dynamic_inventory.html) feature. Basically, it'll create a [host.ini](./ansible/host.ini) file dynamically based on the droplets.
 
 Finally, lets look at the [setup_cluster_playbook](./ansible/setup_cluster_playbook.yaml) automation file.
 ```yaml
 ---
-- name: Set up k3s master nodes
+- name: Set up k3s cluster
   hosts: all
   become: True
   vars:
@@ -224,7 +211,7 @@ Finally, lets look at the [setup_cluster_playbook](./ansible/setup_cluster_playb
     - role: 'xanmanning.k3s'
 ```
 
-Lets clarify here, this role is going to set `master1` and `master2` as a k3s control node, but what is the `master1` and `master2`, these are the tags that we defined as a variable in the provider.tf file, so, `do-ansible-inventory` tool will generate the host.ini based on that tags. Then, these role will use this tags to define which of them are node or server. In this case, we defined `node1`, `node2` and `node3` tags for our worker nodes and `master1`, `master2` for our control plane nodes.
+Lets clarify here, this role is going to set `master1` and `master2` as a k3s control node, but what is the `master1` and `master2`, these are the droplet names that we defined as a variable in the provider.tf file, so, `do-ansible-inventory` tool will generate the `host.ini` based on that tags. Then, these role will use this names to define which of them are node or server. In this case, we defined `node1`, `node2` and `node3` for our worker nodes and `master1`, `master2` for our control plane nodes.
 
 That's it, let's provision our infrastructure.
 ```bash

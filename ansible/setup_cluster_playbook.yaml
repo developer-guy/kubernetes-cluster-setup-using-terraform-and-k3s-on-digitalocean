@@ -1,5 +1,5 @@
 ---
-- name: Set up k3s master nodes
+- name: Set up k3s cluster
   hosts: all
   become: True
   vars:
