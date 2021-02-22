@@ -1,5 +1,5 @@
-resource "digitalocean_loadbalancer" "k3s-master-lb" {
-  name   = "k3s-master-loadbalancer"
+resource "digitalocean_loadbalancer" "k3s-lb" {
+  name   = "k3s-loadbalancer"
   region = "fra1"
 
   forwarding_rule {
@@ -15,6 +15,6 @@ resource "digitalocean_loadbalancer" "k3s-master-lb" {
     port     = 6443
     protocol = "tcp"
   }
-
-  droplet_tag = "k3s_master"
+ 
+  droplet_tag = "master"
 }

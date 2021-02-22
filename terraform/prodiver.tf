@@ -8,7 +8,7 @@ terraform {
 
   backend "remote" {
     organization = "devquy"
-  
+
     workspaces {
       name = "digitalocean"
     }
@@ -17,15 +17,34 @@ terraform {
 
 variable "do_token" {}
 variable "pvt_key" {}
-variable "database_user"{}
-variable "master_names" {
-  type = set(string)
-  default = ["master1","master2"]
-}
+variable "database_user" {}
 
-variable "agent_names" {
-  type = set(string)
-  default = ["node1", "node2", "node3"]
+variable "nodes" {
+  type = set(object({
+    name = string
+    tag  = string
+  }))
+  default = [
+    {
+      name = "master1"
+      tag  = "master"
+    },
+    {
+      name = "master2",
+      tag  = "master"
+    },
+    {
+      name = "agent1",
+      tag  = "agent"
+      }, {
+      name = "agent2",
+      tag  = "agent"
+    },
+    {
+      name = "agent3",
+      tag  = "agent"
+    }
+  ]
 }
 
 provider "digitalocean" {
