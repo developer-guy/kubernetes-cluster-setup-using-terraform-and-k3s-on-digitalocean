@@ -16,6 +16,7 @@ This demo aims to demonstrate how we can use set up your our Kubernetes cluster 
 - <img src="https://symbols-electrical.getvecta.com/stencil_73/122_ansible-icon.e1db432c74.svg" height="16" width="16"/> [What is Ansible ?](#what-is-ansible-)
 - <img src="https://symbols-electrical.getvecta.com/stencil_73/122_ansible-icon.e1db432c74.svg" height="16" width="16"/> [What is Ansible Roles ?](#what-is-ansible-roles-)
 - 👨‍💻 [Hands On](#hands-on)
+- 🚀 [Further More](#further-more)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -299,3 +300,46 @@ node1     Ready    <none>                 10m     v1.20.2+k3s1   165.22.24.74   
 > I'm using [rclone](https://rclone.org) tool to get files from remote to my host.
 
 Tadaaaa 🎉🎉🎉🎉
+
+# Further More
+If you decide to extend your cluster at any time, the only thing that you need to do is adding new nodes to the node list variable defined in the [provider.tf](./terraform/provider.tf) file.
+```tf
+variable "nodes" {
+  type = set(object({
+    name = string
+    tag  = string
+  }))
+  default = [
+    {
+      name = "master1"
+      tag  = "master"
+    },
+    {
+      name = "master2",
+      tag  = "master"
+    },
+    {
+      name = "agent1",
+      tag  = "agent"
+      }, {
+      name = "agent2",
+      tag  = "agent"
+    },
+    {
+      name = "agent3",
+      tag  = "agent"
+    },
+    {
+     name = "agent4",
+     tag = "agent"
+    },
+    {
+     name = "agent5",
+     tag = "agent"
+    }
+  ]
+}
+
+```
+You should notice that we added two new nodes like `agent4` and `agent5`, after we defined them, if we execute the `terraform apply` again, we should see the similar output above:
+![extending_cluster](./assets/extending_cluster.png)
